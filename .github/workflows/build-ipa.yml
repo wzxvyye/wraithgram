@@ -15,7 +15,7 @@ on:
 
 concurrency:
   group: build-wraithgram
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
