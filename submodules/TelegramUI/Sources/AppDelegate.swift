@@ -320,7 +320,10 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
         let appGroupName = "group.\(baseAppBundleId)"
 
         let configuration = URLSessionConfiguration.background(withIdentifier: identifier)
-        configuration.sharedContainerIdentifier = appGroupName
+        // WRAITH: only use the shared container when the app-group entitlement is actually present
+        if FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupName) != nil {
+            configuration.sharedContainerIdentifier = appGroupName
+        }
         configuration.isDiscretionary = false
         let session = URLSession(configuration: configuration, delegate: self, delegateQueue: .main)
         self.urlSessions.append(session)
@@ -574,7 +577,16 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
         try! PasscodeEnvironment.shared.configure(PasscodeConfiguration(appGroupIdentifier: appGroupName, processRole: .mainApp, biometricKeychainService: walletBiometricKeychainService), privateAccessGroup: {
             BuildConfig.keychainAccessGroup(baseAppBundleId: baseAppBundleId)
         })
-        let maybeAppGroupUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupName)
+        // WRAITH: sideloaded builds signed with a free Apple ID have no app-group entitlement
+        // (Sideloadly cannot grant one), so fall back to the app's own container instead of aborting.
+        let appGroupUrl: URL
+        if let groupUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupName) {
+            appGroupUrl = groupUrl
+        } else {
+            let baseUrl = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? FileManager.default.temporaryDirectory
+            appGroupUrl = baseUrl.appendingPathComponent("Wraithgram", isDirectory: true)
+            try? FileManager.default.createDirectory(at: appGroupUrl, withIntermediateDirectories: true, attributes: nil)
+        }
         
         let buildConfig = BuildConfig(baseAppBundleId: baseAppBundleId)
         self.buildConfig = buildConfig
@@ -697,10 +709,6 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
             networkEngineFactory: RustNetworkEngineFactory()
         )
         
-        guard let appGroupUrl = maybeAppGroupUrl else {
-            self.mainWindow?.presentNative(UIAlertController(title: nil, message: "Error 2", preferredStyle: .alert))
-            return true
-        }
         // WRAITH: Wraithgram core and feature modules, before the AccountManager and the accounts (FOUNDATION_SPEC §2)
         ggApplicationDidLaunch(appGroupPath: appGroupUrl.path)
         
