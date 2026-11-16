@@ -102,6 +102,15 @@ jobs:
           tail -80 /tmp/wraithgram-build.log || true
           df -h /
 
+      - name: Publish build error log
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tail -c 20000 /tmp/wraithgram-build.log > /tmp/build-error.txt 2>/dev/null || printf 'no build log produced\n' > /tmp/build-error.txt
+          gh release view latest >/dev/null 2>&1 || gh release create latest --title "Wraithgram build" --notes "latest build"
+          gh release upload latest /tmp/build-error.txt --clobber || true
+
       - name: Prepare IPAs (full + no-extensions)
         run: |
           set -e
