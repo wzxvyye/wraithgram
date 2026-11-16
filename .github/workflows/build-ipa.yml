@@ -1,0 +1,167 @@
+name: Build Wraithgram IPA
+run-name: Wraithgram build
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_id:
+        description: 'Telegram api_id (optional, overrides repo secret)'
+        required: false
+        default: ''
+      api_hash:
+        description: 'Telegram api_hash (optional, overrides repo secret)'
+        required: false
+        default: ''
+
+concurrency:
+  group: build-wraithgram
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # Public-preview image with macOS 27.0.1 + Xcode 27.1 (what versions.json pins).
+    runs-on: xcode-27
+    timeout-minutes: 355
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Show toolchain
+        run: |
+          xcodebuild -version
+          xcode-select -p
+          python3 --version
+          git --version
+          df -h /
+
+      - name: Write build configuration
+        env:
+          INPUT_API_ID: ${{ github.event.inputs.api_id }}
+          INPUT_API_HASH: ${{ github.event.inputs.api_hash }}
+          SECRET_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          SECRET_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+        run: |
+          API_ID="${INPUT_API_ID:-${SECRET_API_ID:-8}}"
+          API_HASH="${INPUT_API_HASH:-${SECRET_API_HASH:-7245de8e747a0d6fbe11f7cc14fcc0bb}}"
+          cat > build-system/wraithgram-configuration.json <<EOF
+          {
+            "bundle_id": "ph.telegra.Telegraph",
+            "api_id": "${API_ID}",
+            "api_hash": "${API_HASH}",
+            "team_id": "C67CF9S4VU",
+            "app_center_id": "0",
+            "is_internal_build": "false",
+            "is_appstore_build": "false",
+            "appstore_id": "0",
+            "app_specific_url_scheme": "tg",
+            "premium_iap_product_id": "",
+            "enable_siri": false,
+            "enable_icloud": false
+          }
+          EOF
+          echo "--- configuration ---"
+          cat build-system/wraithgram-configuration.json
+
+      - name: Import fake certificates
+        run: python3 build-system/Make/ImportCertificates.py --path build-system/fake-codesigning/certs
+
+      - name: Pin Xcode for bazel
+        run: build-system/WGXcodeConfig.sh
+
+      - name: Apply submodule patches
+        run: WG_PATCHES_ONLY=1 build-system/WGBuild.sh
+
+      - name: Build release_arm64
+        run: |
+          set -o pipefail
+          BUILD_NUMBER=$(( $(git rev-list --count HEAD) + $(cat build_number_offset) ))
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> "$GITHUB_ENV"
+          echo "building Wraithgram, build number $BUILD_NUMBER"
+          python3 -u build-system/Make/Make.py \
+            --overrideXcodeVersion \
+            build \
+            --configurationPath build-system/wraithgram-configuration.json \
+            --codesigningInformationPath build-system/fake-codesigning \
+            --configuration release_arm64 \
+            --buildNumber "$BUILD_NUMBER" \
+            --outputBuildArtifactsPath build-output/ipa \
+            2>&1 | tee /tmp/wraithgram-build.log
+
+      - name: Collect build log on failure
+        if: failure()
+        run: |
+          echo "=== last errors ==="
+          grep -nE "^(ERROR|FAILED)|error:" /tmp/wraithgram-build.log | tail -40 || true
+          echo "=== tail ==="
+          tail -80 /tmp/wraithgram-build.log || true
+          df -h /
+
+      - name: Prepare IPAs (full + no-extensions)
+        run: |
+          set -e
+          cd build-output
+          ls -la ipa || true
+          mv -f ipa/Telegram.ipa "Wraithgram-full.ipa"
+
+          # Stripped copy: remove app extensions so a free Apple ID needs only 1 App ID.
+          WORK="$(mktemp -d)"
+          unzip -q "Wraithgram-full.ipa" -d "$WORK"
+          echo "--- Payload ---"
+          ls -la "$WORK/Payload"
+          APP="$(find "$WORK/Payload" -maxdepth 1 -name '*.app' -print -quit)"
+          if [ -z "$APP" ]; then
+            echo "ERROR: no .app inside Payload"; exit 1
+          fi
+          echo "app: $APP"
+          echo "--- PlugIns before ---"
+          ls -la "$APP/PlugIns" || true
+          rm -rf "$APP/PlugIns"
+          rm -f "Wraithgram.ipa"
+          ( cd "$WORK" && zip -qry "$OLDPWD/Wraithgram.ipa" Payload )
+          rm -rf "$WORK"
+
+          echo "--- results ---"
+          ls -la
+          echo "--- verify ipa contents ---"
+          unzip -l Wraithgram.ipa | grep -E "Payload/[^/]+/$|PlugIns" || true
+
+      - name: Upload IPAs
+        uses: actions/upload-artifact@v4
+        with:
+          name: Wraithgram-ipa
+          path: |
+            build-output/Wraithgram.ipa
+            build-output/Wraithgram-full.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wraithgram-build-log
+          path: /tmp/wraithgram-build.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Publish release with a permanent download link
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -x
+          gh release create latest \
+            --title "Wraithgram (последняя сборка)" \
+            --notes "Автосборка Wraithgram из коммита ${{ github.sha }} (запуск #${{ github.run_number }})." \
+            || true
+          gh release upload latest \
+            build-output/Wraithgram.ipa \
+            build-output/Wraithgram-full.ipa \
+            --clobber
+          echo "Скачать: https://github.com/${{ github.repository }}/releases/latest"

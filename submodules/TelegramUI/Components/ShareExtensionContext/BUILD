@@ -1,0 +1,63 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "ShareExtensionContext",
+    module_name = "ShareExtensionContext",
+    srcs = glob([
+        "Sources/**/*.swift",
+    ]) + [
+        # WRAITH: Wraithgram core and the shared part of the features
+        "//Wraithgram/WGHooks:ShareExtensionHookSources",
+    ],
+    copts = [
+        "-warnings-as-errors",
+    ],
+    deps = [
+        # WRAITH: Wraithgram core and the shared part of the features
+        "//Wraithgram/WGCore:WGCore",
+        "//Wraithgram/Features/Shared:WGFeaturesShared",
+        # WRAITH: outgoing photo size, quality and watermark (WGShareExtensionPhotos.swift)
+        "//submodules/ImageCompression:ImageCompression",
+        "//Wraithgram/Features/CameraMasks:WGCameraPipeline",
+        "//submodules/AsyncDisplayKit",
+        "//submodules/Display",
+        "//submodules/TelegramCore",
+        "//submodules/PasscodeCore",
+        "//submodules/SSignalKit/SwiftSignalKit",
+        "//submodules/TelegramPresentationData",
+        "//submodules/TelegramUIPreferences",
+        "//submodules/AccountContext",
+        "//submodules/ShareController",
+        "//submodules/TelegramUI/Components/ShareScreen",
+        "//submodules/LegacyUI",
+        "//submodules/PeerInfoUI",
+        "//submodules/ShareItems",
+        "//submodules/ShareItems/Impl:ShareItemsImpl",
+        "//submodules/SettingsUI",
+        "//submodules/PasscodeUI",
+        "//submodules/OpenSSLEncryptionProvider",
+        "//submodules/AppLock",
+        "//submodules/AppLockState",
+        "//submodules/OverlayStatusController",
+        "//submodules/PresentationDataUtils",
+        "//submodules/ChatImportUI",
+        "//third-party/ZipArchive",
+        "//submodules/ActivityIndicator",
+        "//submodules/DebugSettingsUI",
+        "//submodules/ManagedFile",
+        "//submodules/ContextUI",
+        "//submodules/TelegramUI/Components/TelegramUIDeclareEncodables",
+        "//submodules/TelegramUI/Components/AnimationCache",
+        "//submodules/TelegramUI/Components/MultiAnimationRenderer",
+        "//submodules/TelegramUI/Components/DCTAnimationCacheImpl:DCTAnimationCacheImpl",
+        "//submodules/TelegramUI/Components/DCTMultiAnimationRendererImpl:DCTMultiAnimationRendererImpl",
+        "//submodules/TelegramUI/Components/TelegramAccountAuxiliaryMethods",
+        "//submodules/TelegramUI/Components/PeerSelectionController",
+        "//submodules/TelegramUI/Components/ContextMenuScreen",
+        "//submodules/TelegramUI/Components/ContextControllerImpl",
+        "//submodules/TelegramUI/Components/NavigationBarNode",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+)

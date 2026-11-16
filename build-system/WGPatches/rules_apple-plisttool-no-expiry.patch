@@ -1,0 +1,15 @@
+diff --git a/tools/plisttool/plisttool.py b/tools/plisttool/plisttool.py
+index 2b7eecc..855c622 100644
+--- a/tools/plisttool/plisttool.py
++++ b/tools/plisttool/plisttool.py
+@@ -1210,7 +1210,9 @@ class EntitlementsTask(PlistToolTask):
+     # There also are CreationDate "xxx" and "TimeToLive" keys (date and
+     # integer), but just checking "ExpirationDate" seems better.
+     expire = self._profile_metadata.get('ExpirationDate')
+-    if expire and expire < datetime.datetime.now():
++    # WRAITH: the committed fake-codesigning profiles expire periodically; an
++    # unsigned build must not depend on their wall-clock date, so skip it.
++    if False and expire and expire < datetime.datetime.now():
+       raise PlistToolError(ENTITLEMENTS_PROFILE_HAS_EXPIRED % (
+           self.target, expire.isoformat()))
+ 
