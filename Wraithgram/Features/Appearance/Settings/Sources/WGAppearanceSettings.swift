@@ -106,6 +106,12 @@ public enum WGAppearanceSettings {
     public static let snow = WGSetting<Bool>("appearance.snow.enabled", default: false)
     /// `WGSnowStyle.rawValue`.
     public static let snowStyle = WGSetting<String>("appearance.snow.style", default: "snow")
+    /// `WGSnowSpeed.rawValue`.
+    public static let snowSpeed = WGSetting<String>("appearance.snow.speed", default: "normal")
+    /// % size multiplier, 50…200.
+    public static let snowSize = WGSetting<Double>("appearance.snow.size", default: 100.0)
+    /// "RRGGBB" / "#RRGGBB"; empty = each style's default color.
+    public static let snowColor = WGSetting<String>("appearance.snow.color", default: "")
     /// %, 10…100.
     public static let snowIntensity = WGSetting<Double>("appearance.snow.intensity", default: 100.0)
     public static let snowHideInChats = WGSetting<Bool>("appearance.snow.hideInChats", default: false)
@@ -179,6 +185,9 @@ public enum WGAppearanceSettings {
         let _ = WGAppearanceSettings.profileBackgroundVersion
         let _ = WGAppearanceSettings.snow
         let _ = WGAppearanceSettings.snowStyle
+        let _ = WGAppearanceSettings.snowSpeed
+        let _ = WGAppearanceSettings.snowSize
+        let _ = WGAppearanceSettings.snowColor
         let _ = WGAppearanceSettings.snowIntensity
         let _ = WGAppearanceSettings.snowHideInChats
         let _ = WGAppearanceSettings.profileShowId
@@ -242,9 +251,38 @@ public enum WGTripleTapDelete: String {
     case everyone
 }
 
-public enum WGSnowStyle: String {
+public enum WGSnowStyle: String, CaseIterable {
     case snow
     case lightning
+    case rain
+    case leaves
+    case blossoms
+
+    public static func resolved(_ rawValue: String) -> WGSnowStyle {
+        return WGSnowStyle(rawValue: rawValue) ?? .snow
+    }
+}
+
+public enum WGSnowSpeed: String, CaseIterable {
+    case verySlow
+    case slow
+    case normal
+    case fast
+    case veryFast
+
+    public static func resolved(_ rawValue: String) -> WGSnowSpeed {
+        return WGSnowSpeed(rawValue: rawValue) ?? .normal
+    }
+
+    public var multiplier: Double {
+        switch self {
+        case .verySlow: return 0.4
+        case .slow: return 0.7
+        case .normal: return 1.0
+        case .fast: return 1.4
+        case .veryFast: return 1.8
+        }
+    }
 }
 
 /// "RRGGBB" / "#RRGGBB" → 0xRRGGBB; nil for "" and anything malformed.

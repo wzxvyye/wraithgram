@@ -1274,6 +1274,11 @@ public enum WGStrings {
         }
 
         public enum Snow {
+            /// Color
+            public static var color: Swift.String {
+                return WGLocalization.shared.string("appearance.snow.color")
+            }
+
             /// Snowfall
             public static var enabled: Swift.String {
                 return WGLocalization.shared.string("appearance.snow.enabled")
@@ -1299,7 +1304,7 @@ public enum WGStrings {
                 return WGLocalization.shared.string("appearance.snow.intensity")
             }
 
-            /// snow snowfall new year
+            /// snow snowfall new year rain leaves blossoms lightning color speed size
             public static var keywords: Swift.String {
                 return WGLocalization.shared.string("appearance.snow.keywords")
             }
@@ -1309,14 +1314,69 @@ public enum WGStrings {
                 return WGLocalization.shared.string("appearance.snow.pausedNow")
             }
 
+            /// Reset color
+            public static var resetColor: Swift.String {
+                return WGLocalization.shared.string("appearance.snow.resetColor")
+            }
+
+            /// Size
+            public static var size: Swift.String {
+                return WGLocalization.shared.string("appearance.snow.size")
+            }
+
+            /// Speed
+            public static var speed: Swift.String {
+                return WGLocalization.shared.string("appearance.snow.speed")
+            }
+
+            /// Fast
+            public static var speedFast: Swift.String {
+                return WGLocalization.shared.string("appearance.snow.speedFast")
+            }
+
+            /// Normal
+            public static var speedNormal: Swift.String {
+                return WGLocalization.shared.string("appearance.snow.speedNormal")
+            }
+
+            /// Slow
+            public static var speedSlow: Swift.String {
+                return WGLocalization.shared.string("appearance.snow.speedSlow")
+            }
+
+            /// Very fast
+            public static var speedVeryFast: Swift.String {
+                return WGLocalization.shared.string("appearance.snow.speedVeryFast")
+            }
+
+            /// Very slow
+            public static var speedVerySlow: Swift.String {
+                return WGLocalization.shared.string("appearance.snow.speedVerySlow")
+            }
+
             /// What falls
             public static var style: Swift.String {
                 return WGLocalization.shared.string("appearance.snow.style")
             }
 
+            /// Cherry blossoms
+            public static var styleBlossoms: Swift.String {
+                return WGLocalization.shared.string("appearance.snow.styleBlossoms")
+            }
+
+            /// Leaves
+            public static var styleLeaves: Swift.String {
+                return WGLocalization.shared.string("appearance.snow.styleLeaves")
+            }
+
             /// Lightning
             public static var styleLightning: Swift.String {
                 return WGLocalization.shared.string("appearance.snow.styleLightning")
+            }
+
+            /// Rain
+            public static var styleRain: Swift.String {
+                return WGLocalization.shared.string("appearance.snow.styleRain")
             }
 
             /// Snow

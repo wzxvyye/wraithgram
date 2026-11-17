@@ -123,7 +123,7 @@ private final class WGPreviewBackgroundOverlay: WGMiniChatOverlay {
                 self.snowView = snowView
             }
             snowView.frame = bounds
-            snowView.update(style: settings.snowStyle, intensity: settings.snowIntensity, isPaused: WGSystemState.current)
+            snowView.update(style: settings.snowStyle, speed: settings.snowSpeed, size: settings.snowSize, color: settings.snowColor, intensity: settings.snowIntensity, isPaused: WGSystemState.current)
         } else if let snowView = self.snowView {
             self.snowView = nil
             snowView.removeFromSuperview()

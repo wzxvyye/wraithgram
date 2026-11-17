@@ -38,6 +38,9 @@ struct WGBackgroundDecorSettings: Equatable {
     var snow: Bool
     var snowInChats: Bool
     var snowStyle: WGSnowStyle
+    var snowSpeed: WGSnowSpeed
+    var snowSize: Double
+    var snowColor: UInt32?
     var snowIntensity: Double
 
     /// `double` reads the sliders (the stored value, or the menu preview's draft).
@@ -48,7 +51,10 @@ struct WGBackgroundDecorSettings: Equatable {
             backgroundVersion: WGAppearanceSettings.chatBackgroundVersion.value,
             snow: WGAppearanceSettings.snow.value,
             snowInChats: !WGAppearanceSettings.snowHideInChats.value,
-            snowStyle: WGSnowStyle(rawValue: WGAppearanceSettings.snowStyle.value) ?? .snow,
+            snowStyle: WGSnowStyle.resolved(WGAppearanceSettings.snowStyle.value),
+            snowSpeed: WGSnowSpeed.resolved(WGAppearanceSettings.snowSpeed.value),
+            snowSize: min(2.0, max(0.5, double(WGAppearanceSettings.snowSize) / 100.0)),
+            snowColor: ggAppearanceParseColor(WGAppearanceSettings.snowColor.value),
             snowIntensity: ggClampPercent(double(WGAppearanceSettings.snowIntensity))
         )
     }
@@ -187,7 +193,7 @@ final class WGChatBackgroundOverlay: WGChatOverlay {
                 self.node.view.addSubview(snowView)
                 self.snowView = snowView
             }
-            snowView.update(style: settings.snowStyle, intensity: settings.snowIntensity, isPaused: self.reducesMotion)
+            snowView.update(style: settings.snowStyle, speed: settings.snowSpeed, size: settings.snowSize, color: settings.snowColor, intensity: settings.snowIntensity, isPaused: self.reducesMotion)
         } else if let snowView = self.snowView {
             self.snowView = nil
             snowView.removeFromSuperview()

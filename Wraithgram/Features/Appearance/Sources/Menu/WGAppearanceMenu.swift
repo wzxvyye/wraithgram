@@ -353,10 +353,28 @@ enum WGAppearanceMenu {
         WGMenuRegistry.register(WGMenuRow(id: "appearance.snow.enabled", section: WGAppearanceMenu.themeSnow, order: 100, title: { WGStrings.Appearance.Snow.enabled }, kind: .toggle(.global(WGAppearanceSettings.snow)), searchKeywords: { [WGStrings.Appearance.Snow.keywords] }))
         WGMenuRegistry.register(WGMenuRow(id: "appearance.snow.style", section: WGAppearanceMenu.themeSnow, order: 200, title: { WGStrings.Appearance.Snow.style }, kind: .choice(.global(WGAppearanceSettings.snowStyle), options: [
             WGMenuChoiceOption(value: WGSnowStyle.snow.rawValue, title: { WGStrings.Appearance.Snow.styleSnow }),
-            WGMenuChoiceOption(value: WGSnowStyle.lightning.rawValue, title: { WGStrings.Appearance.Snow.styleLightning })
+            WGMenuChoiceOption(value: WGSnowStyle.lightning.rawValue, title: { WGStrings.Appearance.Snow.styleLightning }),
+            WGMenuChoiceOption(value: WGSnowStyle.rain.rawValue, title: { WGStrings.Appearance.Snow.styleRain }),
+            WGMenuChoiceOption(value: WGSnowStyle.leaves.rawValue, title: { WGStrings.Appearance.Snow.styleLeaves }),
+            WGMenuChoiceOption(value: WGSnowStyle.blossoms.rawValue, title: { WGStrings.Appearance.Snow.styleBlossoms })
         ]), isVisible: snowOn))
-        WGMenuRegistry.register(WGMenuRow(id: "appearance.snow.intensity", section: WGAppearanceMenu.themeSnow, order: 300, title: { WGStrings.Appearance.Snow.intensity }, kind: .slider(.global(WGAppearanceSettings.snowIntensity), range: 10.0 ... 100.0, step: 5.0, format: WGAppearanceMenu.percent), isVisible: snowOn))
-        WGMenuRegistry.register(WGMenuRow(id: "appearance.snow.hideInChats", section: WGAppearanceMenu.themeSnow, order: 400, title: { WGStrings.Appearance.Snow.hideInChats }, kind: .toggle(.global(WGAppearanceSettings.snowHideInChats)), isVisible: snowOn))
+        WGMenuRegistry.register(WGMenuRow(id: "appearance.snow.speed", section: WGAppearanceMenu.themeSnow, order: 300, title: { WGStrings.Appearance.Snow.speed }, kind: .choice(.global(WGAppearanceSettings.snowSpeed), options: [
+            WGMenuChoiceOption(value: WGSnowSpeed.verySlow.rawValue, title: { WGStrings.Appearance.Snow.speedVerySlow }),
+            WGMenuChoiceOption(value: WGSnowSpeed.slow.rawValue, title: { WGStrings.Appearance.Snow.speedSlow }),
+            WGMenuChoiceOption(value: WGSnowSpeed.normal.rawValue, title: { WGStrings.Appearance.Snow.speedNormal }),
+            WGMenuChoiceOption(value: WGSnowSpeed.fast.rawValue, title: { WGStrings.Appearance.Snow.speedFast }),
+            WGMenuChoiceOption(value: WGSnowSpeed.veryFast.rawValue, title: { WGStrings.Appearance.Snow.speedVeryFast })
+        ]), isVisible: snowOn))
+        WGMenuRegistry.register(WGMenuRow(id: "appearance.snow.size", section: WGAppearanceMenu.themeSnow, order: 400, title: { WGStrings.Appearance.Snow.size }, kind: .slider(.global(WGAppearanceSettings.snowSize), range: 50.0 ... 200.0, step: 10.0, format: WGAppearanceMenu.percent), isVisible: snowOn))
+        WGMenuRegistry.register(WGMenuRow(id: "appearance.snow.color", section: WGAppearanceMenu.themeSnow, order: 500, title: { WGStrings.Appearance.Snow.color }, kind: .action({ context in
+            let fallback = UIColor(rgb: WGAppearanceSettings.snowColor.value.isEmpty ? 0xFFFFFF : (ggAppearanceParseColor(WGAppearanceSettings.snowColor.value) ?? 0xFFFFFF))
+            WGColorPicker.present(context: context, setting: WGAppearanceSettings.snowColor, fallback: fallback)
+        }), isVisible: snowOn, label: { _ in WGAppearanceMenu.colorLabel(WGAppearanceSettings.snowColor) }))
+        WGMenuRegistry.register(WGMenuRow(id: "appearance.snow.resetColor", section: WGAppearanceMenu.themeSnow, order: 550, title: { WGStrings.Appearance.Snow.resetColor }, kind: .action({ _ in
+            WGAppearanceSettings.snowColor.reset()
+        }), isVisible: { context in snowOn(context) && !WGAppearanceSettings.snowColor.value.isEmpty }, isDestructive: true))
+        WGMenuRegistry.register(WGMenuRow(id: "appearance.snow.intensity", section: WGAppearanceMenu.themeSnow, order: 600, title: { WGStrings.Appearance.Snow.intensity }, kind: .slider(.global(WGAppearanceSettings.snowIntensity), range: 10.0 ... 100.0, step: 5.0, format: WGAppearanceMenu.percent), isVisible: snowOn))
+        WGMenuRegistry.register(WGMenuRow(id: "appearance.snow.hideInChats", section: WGAppearanceMenu.themeSnow, order: 700, title: { WGStrings.Appearance.Snow.hideInChats }, kind: .toggle(.global(WGAppearanceSettings.snowHideInChats)), isVisible: snowOn))
     }
 
     /// Rows of an animated background: on/off (once a file exists), pick, opacity, delete.

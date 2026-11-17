@@ -115,7 +115,7 @@ private final class WGChatListHeaderDecor {
 
         if background.snow {
             self.snowView.frame = CGRect(origin: CGPoint(), size: self.size)
-            self.snowView.update(style: background.snowStyle, intensity: background.snowIntensity, isPaused: reducesMotion)
+            self.snowView.update(style: background.snowStyle, speed: background.snowSpeed, size: background.snowSize, color: background.snowColor, intensity: background.snowIntensity, isPaused: reducesMotion)
         } else {
             self.snowView.isHidden = true
         }

@@ -467,9 +467,9 @@ public final class TabBarComponent: Component {
             }
             
             self.addSubview(self.backgroundContainer)
-            self.backgroundContainer.contentView.addSubview(self.contextGestureContainerView)
-            
+            self.addSubview(self.contextGestureContainerView)
             self.contextGestureContainerView.addSubview(self.liquidLensView)
+
             let tabSelectionRecognizer = TabSelectionRecognizer(target: self, action: #selector(self.onTabSelectionGesture(_:)))
             self.tabSelectionRecognizer = tabSelectionRecognizer
             self.contextGestureContainerView.addGestureRecognizer(tabSelectionRecognizer)
@@ -937,7 +937,8 @@ public final class TabBarComponent: Component {
                         }
                     )
                     self.searchView = searchView
-                    self.backgroundContainer.contentView.addSubview(searchView)
+                    self.addSubview(searchView)
+                    searchView.layer.zPosition = 2.0
                     searchView.frame = CGRect(origin: CGPoint(x: availableSize.width + 50.0, y: 0.0), size: searchSize)
                 }
                 searchView.update(size: searchSize, theme: component.theme, strings: component.strings, isActive: search.isActive, transition: searchViewTransition)
@@ -956,6 +957,10 @@ public final class TabBarComponent: Component {
 
             transition.setFrame(view: self.backgroundContainer, frame: CGRect(origin: CGPoint(), size: size))
             self.backgroundContainer.update(size: size, isDark: component.theme.overallDarkAppearance, transition: transition)
+            let isFlat = component.ggStyle.isFlat
+            self.backgroundContainer.isHidden = isFlat
+            self.contextGestureContainerView.isHidden = false
+            self.contextGestureContainerView.layer.zPosition = isFlat ? 1.0 : 0.0
 
             return size
         }
