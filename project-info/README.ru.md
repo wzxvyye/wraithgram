@@ -1,6 +1,6 @@
 # Wraithgram
 
-> **Форк Wraithgram:** эта копия брендирована как **Wraithgram**. Сборка и проверка: [WRAITHGRAM.ru.md](WRAITHGRAM.ru.md).
+> **Форк Wraithgram:** эта копия брендирована как **Wraithgram**. Сборка и проверка: [WRAITHGRAM.ru.md](../WRAITHGRAM.ru.md).
 
 [English](README.md) · **Русский**
 
@@ -145,7 +145,7 @@ Wraithgram/Features/Vless/Core/build-core.sh
 
 ## Лицензия
 
-Wraithgram распространяется по [GNU General Public License v2](LICENSE), как и исходный код Telegram iOS,
+Wraithgram распространяется по [GNU General Public License v2](../LICENSE), как и исходный код Telegram iOS,
 на котором он построен. У сторонних компонентов свои лицензии; их список есть в приложении
 (**Настройки → Wraithgram → О приложении → Сторонние компоненты**).
 

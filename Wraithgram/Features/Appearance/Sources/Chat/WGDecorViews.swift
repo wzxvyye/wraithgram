@@ -622,6 +622,7 @@ final class WGSnowView: UIView {
         cell.lifetime = lifetime.mean
         cell.lifetimeRange = lifetime.range
         // 40–48 pt a second at normal speed, mostly downwards (π/2 points down here), ±20° of drift.
+        let speed = CGFloat(self.currentSpeed.multiplier)
         cell.velocity = 44.0 * speed
         cell.velocityRange = 4.0 * speed
         cell.emissionLongitude = .pi / 2.0

@@ -1,6 +1,6 @@
 # Wraithgram
 
-> **Wraithgram fork:** this copy is branded **Wraithgram**. Build and verification: [WRAITHGRAM.ru.md](WRAITHGRAM.ru.md).
+> **Wraithgram fork:** this copy is branded **Wraithgram**. Build and verification: [WRAITHGRAM.ru.md](../WRAITHGRAM.ru.md).
 
 **English** · [Русский](README.ru.md)
 
@@ -149,7 +149,7 @@ says that the core is not included.
 
 ## License
 
-Wraithgram is distributed under the [GNU General Public License v2](LICENSE), like the Telegram iOS source
+Wraithgram is distributed under the [GNU General Public License v2](../LICENSE), like the Telegram iOS source
 code it is based on. Third-party components keep their own licenses; the list is in the app
 (**Settings → Wraithgram → About → Third-Party Components**).
 
