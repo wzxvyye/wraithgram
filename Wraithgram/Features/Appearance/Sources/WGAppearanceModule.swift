@@ -1,4 +1,5 @@
 import Foundation
+import WGHooks
 import WGAppearanceSettings
 
 /// Entry point of the WGAppearance feature module (owner W2-4): appearance of messages, theme and
@@ -24,6 +25,11 @@ public enum WGAppearanceModule {
         WGChatListDecor.register()
         WGProfileDecor.register()
         WGAppearancePendingPoints.register()
+
+        // Local Premium (W2-4): the account reads itself as Premium while the setting is on.
+        WGAccountStateHooks.localPremium.register({
+            return WGAppearanceSettings.localPremium.value
+        })
 
         WGAppearanceMenu.register()
     }

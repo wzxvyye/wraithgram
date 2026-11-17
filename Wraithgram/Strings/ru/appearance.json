@@ -115,6 +115,8 @@
   "appearance.profile.hideStarRating": "Скрыть уровень звёзд",
   "appearance.profile.idLabel": "ID",
   "appearance.profile.joinedLabel": "Вы вступили",
+  "appearance.profile.localPremium": "Локальный Premium",
+  "appearance.profile.localPremiumInfo": "Звезда Premium и премиальный вид в вашем профиле. Серверные возможности (лимиты загрузки, платные стикеры) остаются как есть.",
   "appearance.profile.memberJoinedLabel": "Вступление в «{chat}»",
   "appearance.profile.mutualContactLabel": "Контакт",
   "appearance.profile.mutualContactValue": "Взаимный контакт",

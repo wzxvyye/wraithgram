@@ -82,8 +82,12 @@ public final class LiquidLensView: UIView {
         var isDark: Bool
         var isLifted: Bool
         var isCollapsed: Bool
+        // WRAITH: the flat look of the tab bar (no glass, no lens).
+        var isFlat: Bool
+        var flatFillColor: UIColor
+        var flatSelectionColor: UIColor
 
-        init(size: CGSize, cornerRadius: CGFloat?, selectionOrigin: CGPoint, selectionSize: CGSize, inset: CGFloat, liftedInset: CGFloat, isDark: Bool, isLifted: Bool, isCollapsed: Bool) {
+        init(size: CGSize, cornerRadius: CGFloat?, selectionOrigin: CGPoint, selectionSize: CGSize, inset: CGFloat, liftedInset: CGFloat, isDark: Bool, isLifted: Bool, isCollapsed: Bool, isFlat: Bool = false, flatFillColor: UIColor = .clear, flatSelectionColor: UIColor = .clear) {
             self.size = size
             self.cornerRadius = cornerRadius
             self.selectionOrigin = selectionOrigin
@@ -93,6 +97,9 @@ public final class LiquidLensView: UIView {
             self.isLifted = isLifted
             self.isDark = isDark
             self.isCollapsed = isCollapsed
+            self.isFlat = isFlat
+            self.flatFillColor = flatFillColor
+            self.flatSelectionColor = flatSelectionColor
         }
     }
 
@@ -132,6 +139,18 @@ public final class LiquidLensView: UIView {
     private var appliedLensParams: LensParams?
     private var isApplyingLensParams: Bool = false
     private var pendingLensParams: LensParams?
+
+    /// Flat look (WRAITH, owner 2026-11-17): an opaque pill in `flatFillColor` with a plain rounded
+    /// selection in `flatSelectionColor` — no glass, no liquid lens. The tab bar puts the selected
+    /// items into `selectedOverlayContentView`, since there is no lens to punch them through.
+    private var flatFillView: UIView?
+    private var flatSelectionView: UIView?
+    /// Host of the selected items in the flat look: above everything, so neither a hidden lens nor a
+    /// leftover mask can eat them.
+    private let overlayContentView: UIView
+    public var selectedOverlayContentView: UIView {
+        return self.overlayContentView
+    }
 
     private var liftedDisplayLink: SharedDisplayLinkDriver.Link?
 
@@ -173,6 +192,7 @@ public final class LiquidLensView: UIView {
         
         self.contentView = UIView()
         self.liftedContainerView = UIView()
+        self.overlayContentView = UIView()
 
         self.restingBackgroundView = RestingBackgroundView()
 
@@ -194,6 +214,7 @@ public final class LiquidLensView: UIView {
             }
         }
         self.containerView.isUserInteractionEnabled = false
+        self.containerView.clipsToBounds = true
         
         if #available(iOS 26.0, *) {
             if let viewClass = NSClassFromString("_UILiquidLensView") as AnyObject as? NSObjectProtocol {
@@ -285,6 +306,12 @@ public final class LiquidLensView: UIView {
             
             self.containerView.addSubview(self.liftedContainerView)
         }
+
+        // Last, so the flat look's selected items are above the lens and its content (WRAITH).
+        self.overlayContentView.isUserInteractionEnabled = false
+        self.overlayContentView.isHidden = true
+        self.containerView.addSubview(self.overlayContentView)
+        self.bringSubviewToFront(self.containerView)
     }
 
     required init?(coder: NSCoder) {
@@ -298,8 +325,8 @@ public final class LiquidLensView: UIView {
         lensView.perform(NSSelectorFromString("setLiftedContainerView:"), with: view)
     }
 
-    public func update(size: CGSize, cornerRadius: CGFloat? = nil, selectionOrigin: CGPoint, selectionSize: CGSize, inset: CGFloat, liftedInset: CGFloat = 4.0, isDark: Bool, isLifted: Bool, isCollapsed: Bool = false, transition: ComponentTransition) {
-        let params = Params(size: size, cornerRadius: cornerRadius, selectionOrigin: selectionOrigin, selectionSize: selectionSize, inset: inset, liftedInset: liftedInset, isDark: isDark, isLifted: isLifted, isCollapsed: isCollapsed)
+    public func update(size: CGSize, cornerRadius: CGFloat? = nil, selectionOrigin: CGPoint, selectionSize: CGSize, inset: CGFloat, liftedInset: CGFloat = 4.0, isDark: Bool, isLifted: Bool, isCollapsed: Bool = false, isFlat: Bool = false, flatFillColor: UIColor = .clear, flatSelectionColor: UIColor = .clear, transition: ComponentTransition) {
+        let params = Params(size: size, cornerRadius: cornerRadius, selectionOrigin: selectionOrigin, selectionSize: selectionSize, inset: inset, liftedInset: liftedInset, isDark: isDark, isLifted: isLifted, isCollapsed: isCollapsed, isFlat: isFlat, flatFillColor: flatFillColor, flatSelectionColor: flatSelectionColor)
         if self.params == params {
             return
         }
@@ -437,7 +464,8 @@ public final class LiquidLensView: UIView {
         
         if let backgroundView = self.backgroundView {
             transition.setFrame(view: backgroundView, frame: CGRect(origin: CGPoint(), size: params.size))
-            backgroundView.update(size: params.size, cornerRadius: params.cornerRadius ?? (params.size.height * 0.5), isDark: params.isDark, tintColor: GlassBackgroundView.TintColor.init(kind: .panel), isInteractive: true, transition: transition)
+            // WRAITH: the flat look draws its own opaque pill instead of the glass.
+            backgroundView.update(size: params.size, cornerRadius: params.cornerRadius ?? (params.size.height * 0.5), isDark: params.isDark, tintColor: GlassBackgroundView.TintColor.init(kind: .panel), isInteractive: !params.isFlat, isVisible: !params.isFlat, transition: transition)
         }
         
         if self.contentView.bounds.size != params.size {
@@ -487,7 +515,7 @@ public final class LiquidLensView: UIView {
         self.restingBackgroundView.update(isDark: params.isDark)
         transition.setAlpha(view: self.restingBackgroundView, alpha: (params.isLifted || params.isCollapsed) ? 0.0 : 1.0)
 
-        if params.isLifted {
+        if params.isLifted && !params.isFlat {
             if self.liftedDisplayLink == nil {
                 self.liftedDisplayLink = SharedDisplayLinkDriver.shared.add(framesPerSecond: .max, { [weak self] _ in
                     guard let self else {
@@ -500,5 +528,77 @@ public final class LiquidLensView: UIView {
             self.liftedDisplayLink = nil
             liftedDisplayLink.invalidate()
         }
+
+        self.updateFlatLook(params: params, transition: transition)
+    }
+
+    /// The flat look of the tab bar (WRAITH, owner 2026-11-17): the glass and the lens go away, an
+    /// opaque pill of the bar's own color and a plain rounded selection take their place. Switching
+    /// back only shows them again — nothing of the glass is rebuilt.
+    private func updateFlatLook(params: Params, transition: ComponentTransition) {
+        let isFlat = params.isFlat
+
+        let fillView: UIView
+        if let current = self.flatFillView {
+            fillView = current
+        } else {
+            let view = UIView()
+            view.isUserInteractionEnabled = false
+            self.flatFillView = view
+            fillView = view
+        }
+        if let backgroundView {
+            let host = backgroundView.contentView
+            if fillView.superview !== host {
+                fillView.removeFromSuperview()
+                host.insertSubview(fillView, at: 0)
+            }
+        } else if fillView.superview !== self.containerView {
+            fillView.removeFromSuperview()
+            self.containerView.insertSubview(fillView, at: 0)
+        }
+
+        let selectionView: UIView
+        if let current = self.flatSelectionView {
+            selectionView = current
+        } else {
+            let view = UIView()
+            view.isUserInteractionEnabled = false
+            self.containerView.insertSubview(view, at: 0)
+            self.flatSelectionView = view
+            selectionView = view
+        }
+
+        if let lensView = self.lensView {
+            lensView.isHidden = isFlat
+        }
+        self.liftedContainerView.isHidden = isFlat
+        self.overlayContentView.isHidden = !isFlat
+        transition.setFrame(view: self.overlayContentView, frame: CGRect(origin: CGPoint(), size: params.size))
+        self.legacySelectionView?.isHidden = isFlat
+        if let legacyContentMaskView = self.legacyContentMaskView {
+            self.contentView.mask = isFlat ? nil : legacyContentMaskView
+            self.liftedContainerView.mask = isFlat ? nil : self.legacyLiftedContentBlobMaskView
+        } else if isFlat {
+            // The lens punches the selected items through `contentView`; the flat look has them in
+            // `overlayContentView`, so any leftover punchout is only a hole.
+            self.contentView.mask = nil
+        }
+
+        let fillFrame = CGRect(origin: CGPoint(), size: params.size)
+        let fillRadius = params.cornerRadius ?? (params.size.height * 0.5)
+        let selectionFrame = CGRect(origin: params.selectionOrigin, size: params.selectionSize).insetBy(dx: 2.0, dy: 2.0)
+        let selectionRadius = max(0.0, selectionFrame.height * 0.5)
+
+        fillView.backgroundColor = params.flatFillColor
+        selectionView.backgroundColor = params.flatSelectionColor
+
+        transition.setFrame(view: fillView, frame: fillFrame)
+        transition.setCornerRadius(layer: fillView.layer, cornerRadius: fillRadius)
+        transition.setAlpha(view: fillView, alpha: isFlat ? 1.0 : 0.0)
+
+        transition.setFrame(view: selectionView, frame: selectionFrame)
+        transition.setCornerRadius(layer: selectionView.layer, cornerRadius: selectionRadius)
+        transition.setAlpha(view: selectionView, alpha: (isFlat && !params.isCollapsed) ? 1.0 : 0.0)
     }
 }

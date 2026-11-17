@@ -23,8 +23,11 @@ public struct WGTabBarStyle: Equatable {
     public var bottomOffset: CGFloat
     /// Changes whenever own labels change, so cached layouts of the bar refresh.
     public var titlesRevision: Int
+    /// Flat look (owner, 2026-11-17): an opaque pill of the theme's tab bar color with a simple
+    /// rounded selection, no liquid glass and no lens.
+    public var isFlat: Bool
 
-    public init(hidesTitles: Bool, isWide: Bool, fitsItems: Bool, hidesBar: Bool, heightOffset: CGFloat, bottomOffset: CGFloat, titlesRevision: Int) {
+    public init(hidesTitles: Bool, isWide: Bool, fitsItems: Bool, hidesBar: Bool, heightOffset: CGFloat, bottomOffset: CGFloat, titlesRevision: Int, isFlat: Bool = false) {
         self.hidesTitles = hidesTitles
         self.isWide = isWide
         self.fitsItems = fitsItems
@@ -32,6 +35,7 @@ public struct WGTabBarStyle: Equatable {
         self.heightOffset = heightOffset
         self.bottomOffset = bottomOffset
         self.titlesRevision = titlesRevision
+        self.isFlat = isFlat
     }
 
     public static let upstream = WGTabBarStyle(hidesTitles: false, isWide: false, fitsItems: false, hidesBar: false, heightOffset: 0.0, bottomOffset: 0.0, titlesRevision: 0)

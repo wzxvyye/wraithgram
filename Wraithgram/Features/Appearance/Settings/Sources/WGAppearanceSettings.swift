@@ -122,6 +122,11 @@ public enum WGAppearanceSettings {
     public static let profileHideShareButton = WGSetting<Bool>("appearance.profile.hideShareButton", default: false)
     public static let profileHideStarRating = WGSetting<Bool>("appearance.profile.hideStarRating", default: false)
 
+    /// Local Premium: the account looks Premium everywhere (the star in the profile, the premium
+    /// parts of the UI), with no server rights — uploads, paid stickers and the like stay limited by
+    /// Telegram. Visual only, as in AuGram.
+    public static let localPremium = WGSetting<Bool>("appearance.profile.localPremium", default: false)
+
     /// Touches every declaration so the registry knows them before export, search and migrations.
     public static func declare() {
         let _ = WGAppearanceSettings.fontFamily
@@ -182,6 +187,7 @@ public enum WGAppearanceSettings {
         let _ = WGAppearanceSettings.profileHideDescription
         let _ = WGAppearanceSettings.profileHideShareButton
         let _ = WGAppearanceSettings.profileHideStarRating
+        let _ = WGAppearanceSettings.localPremium
     }
 }
 

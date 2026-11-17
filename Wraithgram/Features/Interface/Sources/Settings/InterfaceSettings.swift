@@ -141,6 +141,8 @@ enum InterfaceSettings {
     static let hiddenTabs = WGSetting<[String]>("interface.tabBar.hidden", default: [])
     static let hideTabTitles = WGSetting<Bool>("interface.tabBar.hideTitles", default: false)
     static let wideTabBar = WGSetting<Bool>("interface.tabBar.wide", default: false)
+    /// "glass" (iOS 26 liquid glass, the lens) or "flat" (an opaque pill with a rounded selection).
+    static let tabBarStyle = WGSetting<String>("interface.tabBar.style", default: "glass")
     static let hideTabBar = WGSetting<Bool>("interface.tabBar.hide", default: false)
     /// Extra height of the bar and its lift above the bottom edge, pt.
     static let tabBarHeightOffset = WGSetting<Double>("interface.tabBar.heightOffset", default: 0.0)
@@ -250,6 +252,7 @@ enum InterfaceSettings {
         let _ = InterfaceSettings.hiddenTabs
         let _ = InterfaceSettings.hideTabTitles
         let _ = InterfaceSettings.wideTabBar
+        let _ = InterfaceSettings.tabBarStyle
         let _ = InterfaceSettings.hideTabBar
         let _ = InterfaceSettings.tabBarHeightOffset
         let _ = InterfaceSettings.tabBarBottomOffset

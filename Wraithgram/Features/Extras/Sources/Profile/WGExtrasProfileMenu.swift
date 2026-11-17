@@ -36,10 +36,30 @@ enum WGExtrasProfileMenu {
                 items.append(WGExtrasProfileMenu.administratorsItem(info, peerId: chatPeer.id))
             }
         }
+        // «В начало»: any profile, right to the oldest message of its chat (owner, 2026-11-17).
+        items.append(WGExtrasProfileMenu.toBeginningItem(info, peer: chatPeer))
         if WGExtrasSettings.hiddenPinnedMenuItem.value && chatPeer.id != info.context.account.peerId {
             items.append(WGExtrasProfileMenu.hiddenPinnedItem(info, peer: chatPeer))
         }
         return items
+    }
+
+    /// Opens the chat and jumps to the very first message, through the same scroll the quick button
+    /// and the status-bar tap use (`WGChatScreenHooks.scrollToStartOfHistory`).
+    private static func toBeginningItem(_ info: WGPeerInfoContext, peer: EnginePeer) -> ContextMenuItem {
+        let context = info.context
+        let controller = info.controller
+        return .action(ContextMenuActionItem(text: WGStrings.Extras.Profile.toBeginning, icon: { theme in
+            return generateTintedImage(image: UIImage(bundleImageName: "Chat/Context Menu/AlignTop"), color: theme.contextMenu.primaryColor)
+        }, action: { [weak controller] _, f in
+            f(.dismissWithoutContent)
+            guard let navigationController = controller?.navigationController as? NavigationController else {
+                return
+            }
+            context.sharedContext.navigateToChatController(NavigateToChatControllerParams(navigationController: navigationController, context: context, chatLocation: .peer(peer), completion: { chatController in
+                WGChatScreenHooks.scrollToStartOfHistory?(chatController)
+            }))
+        }))
     }
 
     private static func recentActionsItem(_ info: WGPeerInfoContext, peer: EnginePeer) -> ContextMenuItem {

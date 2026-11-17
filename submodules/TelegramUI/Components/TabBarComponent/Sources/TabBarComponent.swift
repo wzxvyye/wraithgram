@@ -809,18 +809,25 @@ public final class TabBarComponent: Component {
                 if let itemComponentView = itemView.view as? ItemComponent.View, let selectedItemComponentView = selectedItemView.view as? ItemComponent.View {
                     let itemAlphaTransition: ComponentTransition = transition.animation.isImmediate ? .immediate : .easeInOut(duration: 0.25)
 
-                    if itemComponentView.superview == nil {
+                    let isFlat = component.ggStyle.isFlat // WRAITH: flat tab bar look
+                    if itemComponentView.superview !== self.liquidLensView.contentView {
                         itemComponentView.isUserInteractionEnabled = false
                         selectedItemComponentView.isUserInteractionEnabled = false
 
                         self.liquidLensView.contentView.addSubview(itemComponentView)
-                        self.liquidLensView.selectedContentView.addSubview(selectedItemComponentView)
+                    }
+                    // WRAITH: without the lens there is nothing to punch the selected items through,
+                    // so they go to the flat look's own overlay above everything.
+                    let selectedHost = isFlat ? self.liquidLensView.selectedOverlayContentView : self.liquidLensView.selectedContentView
+                    if selectedItemComponentView.superview !== selectedHost {
+                        selectedItemComponentView.isUserInteractionEnabled = false
+                        selectedHost.addSubview(selectedItemComponentView)
                     }
 
                     if let search, search.isActive {
                         if isItemSelected {
                             itemFrame.origin.x = floor((48.0 - itemSize.width) * 0.5)
-                            itemTransition.setAlpha(view: itemComponentView, alpha: 1.0)
+                            itemTransition.setAlpha(view: itemComponentView, alpha: isFlat ? 0.0 : 1.0)
                             itemAlphaTransition.setBlur(layer: itemComponentView.layer, radius: 0.0)
                             itemTransition.setAlpha(view: selectedItemComponentView, alpha: 1.0)
                             itemAlphaTransition.setBlur(layer: selectedItemComponentView.layer, radius: 0.0)
@@ -830,6 +837,11 @@ public final class TabBarComponent: Component {
                             itemTransition.setAlpha(view: selectedItemComponentView, alpha: 0.0)
                             itemAlphaTransition.setBlur(layer: selectedItemComponentView.layer, radius: 10.0)
                         }
+                    } else if isFlat {
+                        itemTransition.setAlpha(view: itemComponentView, alpha: isItemSelected ? 0.0 : 1.0)
+                        itemAlphaTransition.setBlur(layer: itemComponentView.layer, radius: 0.0)
+                        itemTransition.setAlpha(view: selectedItemComponentView, alpha: isItemSelected ? 1.0 : 0.0)
+                        itemAlphaTransition.setBlur(layer: selectedItemComponentView.layer, radius: 0.0)
                     } else {
                         itemTransition.setAlpha(view: itemComponentView, alpha: 1.0)
                         itemAlphaTransition.setBlur(layer: itemComponentView.layer, radius: 0.0)
@@ -887,7 +899,7 @@ public final class TabBarComponent: Component {
                 lensSelectionFrame = CGRect(x: 0.0, y: 0.0, width: 48.0, height: 48.0)
             }
             
-            self.liquidLensView.update(size: lensSize, cornerRadius: component.axis == .vertical ? lensSize.width * 0.5 : nil, selectionOrigin: lensSelectionFrame.origin, selectionSize: lensSelectionFrame.size, inset: 4.0, isDark: component.theme.overallDarkAppearance, isLifted: self.selectionGestureState != nil && component.isLiftedStateEnabled, isCollapsed: isLensCollapsed, transition: transition.withUserData(LiquidLensView.TransitionInfo(disableAnimationWorkarounds: !component.isLiftedStateEnabled)))
+            self.liquidLensView.update(size: lensSize, cornerRadius: component.axis == .vertical ? lensSize.width * 0.5 : nil, selectionOrigin: lensSelectionFrame.origin, selectionSize: lensSelectionFrame.size, inset: 4.0, isDark: component.theme.overallDarkAppearance, isLifted: self.selectionGestureState != nil && component.isLiftedStateEnabled, isCollapsed: isLensCollapsed, isFlat: component.ggStyle.isFlat, flatFillColor: component.theme.rootController.tabBar.backgroundColor.withAlphaComponent(1.0), flatSelectionColor: component.theme.rootController.tabBar.selectedIconColor.withAlphaComponent(component.theme.overallDarkAppearance ? 0.22 : 0.14), transition: transition.withUserData(LiquidLensView.TransitionInfo(disableAnimationWorkarounds: !component.isLiftedStateEnabled))) // WRAITH: flat look
 
             var size = tabsSize
 

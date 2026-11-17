@@ -308,7 +308,15 @@ public final class AccountContextImpl: AccountContext {
     private var audioTranscriptionTrialDisposable: Disposable?
     public private(set) var audioTranscriptionTrial: AudioTranscription.TrialState
     
-    public private(set) var isPremium: Bool
+    /// WRAITH: local Premium (W2-4) turns the account Premium for the UI only — see
+    /// `WGAccountStateHooks`. The server value is kept here and returned when it is off.
+    private var serverIsPremium: Bool
+    public var isPremium: Bool {
+        if WGAccountStateHooks.isLocalPremium() {
+            return true
+        }
+        return self.serverIsPremium
+    }
     
     private var isFrozenDisposable: Disposable?
     public private(set) var isFrozen: Bool
@@ -326,7 +334,7 @@ public final class AccountContextImpl: AccountContext {
         self.userLimits = EngineConfiguration.UserLimits(UserLimitsConfiguration.defaultValue)
         self.peerNameColors = PeerNameColors.with(availableReplyColors: availableReplyColors, availableProfileColors: availableProfileColors)
         self.audioTranscriptionTrial = AudioTranscription.TrialState.defaultValue
-        self.isPremium = false
+        self.serverIsPremium = false
         self.isFrozen = false
         
         self.downloadedMediaStoreManager = DownloadedMediaStoreManagerImpl(postbox: account.postbox, accountManager: sharedContext.accountManager)
@@ -586,7 +594,7 @@ public final class AccountContextImpl: AccountContext {
             guard let self = self else {
                 return
             }
-            self.isPremium = isPremium
+            self.serverIsPremium = isPremium
             self.userLimits = userLimits
         })
         

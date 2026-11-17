@@ -181,7 +181,8 @@ final class WGTabBarPreviewView: UIView, WGMenuPreviewView {
             hidesBar: InterfaceSettings.hideTabBar.value,
             heightOffset: CGFloat(WGTabBarLayout.clampHeightOffset(context.displayValue(.global(InterfaceSettings.tabBarHeightOffset)))),
             bottomOffset: CGFloat(WGTabBarLayout.clampBottomOffset(context.displayValue(.global(InterfaceSettings.tabBarBottomOffset)))),
-            titlesRevision: InterfaceSnapshots.shared.current.tabBarStyle.titlesRevision
+            titlesRevision: InterfaceSnapshots.shared.current.tabBarStyle.titlesRevision,
+            isFlat: InterfaceSettings.tabBarStyle.value == "flat"
         )
         let order = WGTabBarLayout.normalizedOrder(InterfaceSettings.tabOrder.value)
         var hidden = Set(InterfaceSettings.hiddenTabs.value)

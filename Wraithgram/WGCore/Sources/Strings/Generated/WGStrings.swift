@@ -1222,6 +1222,16 @@ public enum WGStrings {
                 return WGLocalization.shared.string("appearance.profile.joinedLabel")
             }
 
+            /// Local Premium
+            public static var localPremium: Swift.String {
+                return WGLocalization.shared.string("appearance.profile.localPremium")
+            }
+
+            /// The Premium star and the Premium look on your own profile. Server features (upload limits, paid stickers) stay as they are.
+            public static var localPremiumInfo: Swift.String {
+                return WGLocalization.shared.string("appearance.profile.localPremiumInfo")
+            }
+
             /// Joined “{chat}”
             public static func memberJoinedLabel(chat: Swift.String) -> Swift.String {
                 return WGLocalization.shared.format("appearance.profile.memberJoinedLabel", [("chat", chat)])
@@ -5917,6 +5927,11 @@ public enum WGStrings {
             public static var showPinned: Swift.String {
                 return WGLocalization.shared.string("extras.profile.showPinned")
             }
+
+            /// To Beginning
+            public static var toBeginning: Swift.String {
+                return WGLocalization.shared.string("extras.profile.toBeginning")
+            }
         }
 
         public enum Selection {
@@ -7536,6 +7551,21 @@ public enum WGStrings {
             /// Bar Lift
             public static var tabBarLift: Swift.String {
                 return WGLocalization.shared.string("interface.menu.tabBarLift")
+            }
+
+            /// Bar Style
+            public static var tabBarStyle: Swift.String {
+                return WGLocalization.shared.string("interface.menu.tabBarStyle")
+            }
+
+            /// Flat
+            public static var tabBarStyleFlat: Swift.String {
+                return WGLocalization.shared.string("interface.menu.tabBarStyleFlat")
+            }
+
+            /// Liquid Glass
+            public static var tabBarStyleGlass: Swift.String {
+                return WGLocalization.shared.string("interface.menu.tabBarStyleGlass")
             }
 
             /// tabs order contacts calls

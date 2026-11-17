@@ -380,6 +380,7 @@ enum WGAppearanceMenu {
         let tab = WGMenuTabID.appearanceProfileSettings
         WGMenuRegistry.register(section: WGMenuSectionDescriptor(id: WGAppearanceMenu.profileInfo, screen: .tab(tab), order: 300, header: { WGStrings.Appearance.Profile.header }, footer: { _ in WGStrings.Appearance.Profile.footer }))
         let rows: [(String, () -> String, (() -> String)?, WGSetting<Bool>)] = [
+            ("appearance.profile.localPremium", { WGStrings.Appearance.Profile.localPremium }, { WGStrings.Appearance.Profile.localPremiumInfo }, WGAppearanceSettings.localPremium),
             ("appearance.profile.showId", { WGStrings.Appearance.Profile.showId }, nil, WGAppearanceSettings.profileShowId),
             ("appearance.profile.showDataCenter", { WGStrings.Appearance.Profile.showDataCenter }, { WGStrings.Appearance.Profile.showDataCenterInfo }, WGAppearanceSettings.profileShowDataCenter),
             ("appearance.profile.showDates", { WGStrings.Appearance.Profile.showDates }, { WGStrings.Appearance.Profile.showDatesInfo }, WGAppearanceSettings.profileShowDates),

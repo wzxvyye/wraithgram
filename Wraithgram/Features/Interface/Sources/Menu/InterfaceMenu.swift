@@ -171,6 +171,9 @@ enum InterfaceMenu {
             let changed = !InterfaceSettings.tabOrder.isDefault || !InterfaceSettings.tabTitles.isDefault || !InterfaceSettings.hiddenTabs.isDefault
             return changed ? WGStrings.Interface.Menu.changedLabel : nil
         }))
+        WGMenuRegistry.register(WGMenuRow(id: "interface.tabBar.style", section: main, order: 150, title: { WGStrings.Interface.Menu.tabBarStyle }, kind: .choice(.global(InterfaceSettings.tabBarStyle), options: InterfaceMenu.options(["glass", "flat"], title: { value in
+            return value == "flat" ? WGStrings.Interface.Menu.tabBarStyleFlat : WGStrings.Interface.Menu.tabBarStyleGlass
+        })), isVisible: { _ in !InterfaceSettings.hideTabBar.value }))
         WGMenuRegistry.register(WGMenuRow(id: "interface.tabBar.hideTitles", section: main, order: 200, title: { WGStrings.Interface.Menu.hideTabTitles }, subtitle: { WGStrings.Interface.Menu.hideTabTitlesInfo }, kind: .toggle(.global(InterfaceSettings.hideTabTitles))))
         WGMenuRegistry.register(WGMenuRow(id: "interface.tabBar.wide", section: main, order: 300, title: { WGStrings.Interface.Menu.wideTabBar }, kind: .toggle(.global(InterfaceSettings.wideTabBar))))
         WGMenuRegistry.register(WGMenuRow(id: "interface.tabBar.hide", section: main, order: 400, title: { WGStrings.Interface.Menu.hideTabBar }, subtitle: { WGStrings.Interface.Menu.hideTabBarInfo }, kind: .toggle(.global(InterfaceSettings.hideTabBar))))

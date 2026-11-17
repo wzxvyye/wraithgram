@@ -95,7 +95,8 @@ struct WGInterfaceSnapshot: Equatable {
             hidesBar: InterfaceSettings.hideTabBar.value,
             heightOffset: CGFloat(WGTabBarLayout.clampHeightOffset(InterfaceSettings.tabBarHeightOffset.value)),
             bottomOffset: CGFloat(WGTabBarLayout.clampBottomOffset(InterfaceSettings.tabBarBottomOffset.value)),
-            titlesRevision: titlesRevision
+            titlesRevision: titlesRevision,
+            isFlat: InterfaceSettings.tabBarStyle.value == "flat"
         )
 
         let titleStyle = WGChatListTitleStyle(

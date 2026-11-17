@@ -416,6 +416,8 @@ final class WGSnowView: UIView {
 
     private let kind: Kind
     private let emitterLayer = CAEmitterLayer()
+    /// The «thunder»: a full-screen pale flash that comes with a strike (bolts style, behind messages).
+    private let flashLayer = CALayer()
     private var currentStyle: WGSnowStyle?
     private var currentIntensity: Double = -1.0
     private var areaFactor: CGFloat = 1.0
@@ -433,6 +435,9 @@ final class WGSnowView: UIView {
         // Nothing is born until the view is in a window (`willMove(toWindow:)`).
         self.emitterLayer.birthRate = 0.0
         self.layer.addSublayer(self.emitterLayer)
+        self.flashLayer.backgroundColor = UIColor(red: 1.0, green: 0.97, blue: 0.86, alpha: 1.0).cgColor
+        self.flashLayer.opacity = 0.0
+        self.layer.addSublayer(self.flashLayer)
     }
 
     required init?(coder: NSCoder) {
@@ -462,6 +467,30 @@ final class WGSnowView: UIView {
         CATransaction.setDisableActions(true)
         self.emitterLayer.birthRate = (isInWindow && !self.isPaused) ? 1.0 : 0.0
         CATransaction.commit()
+        self.updateFlash(isInWindow: isInWindow)
+    }
+
+    /// The thunder flash: a repeating keyframe pulse (nothing is drawn between strikes), restarted
+    /// only when it should run and is not running yet. Off with snow, off in the header, off paused.
+    private func updateFlash(isInWindow: Bool) {
+        let enabled = isInWindow && !self.isPaused && self.currentStyle == .lightning && self.kind == .background
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        if enabled {
+            if self.flashLayer.animation(forKey: "thunder") == nil {
+                let animation = CAKeyframeAnimation(keyPath: "opacity")
+                // Two quick flashes a few hundredths of a second apart, then a long dark pause.
+                animation.values = [0.0, 0.0, 0.5, 0.05, 0.3, 0.0, 0.0]
+                animation.keyTimes = [0.0, 0.6, 0.645, 0.68, 0.72, 0.76, 1.0]
+                animation.duration = Double.random(in: 6.0 ... 12.0)
+                animation.repeatCount = .infinity
+                self.flashLayer.add(animation, forKey: "thunder")
+            }
+        } else {
+            self.flashLayer.removeAnimation(forKey: "thunder")
+            self.flashLayer.opacity = 0.0
+        }
+        CATransaction.commit()
     }
 
     override func layoutSubviews() {
@@ -471,6 +500,7 @@ final class WGSnowView: UIView {
         self.emitterLayer.frame = self.bounds
         self.emitterLayer.emitterPosition = CGPoint(x: self.bounds.midX, y: self.bounds.midY)
         self.emitterLayer.emitterSize = self.bounds.size
+        self.flashLayer.frame = self.bounds
         CATransaction.commit()
 
         let screen = UIScreen.main.bounds.size
@@ -512,13 +542,29 @@ final class WGSnowView: UIView {
                 cells.append(cell)
             }
         case .lightning:
-            // Fewer and bigger: a bolt is a glyph, not a dot.
-            let cell = self.makeCell(image: WGSnowView.boltImage(), birthRate: totalBirthRate * 0.25, lifetime: lifetime)
-            cell.color = UIColor(rgb: 0xffd84a, alpha: 0.95).cgColor
-            cell.scale = 1.0
-            cell.scaleRange = 0.35
-            cell.spinRange = 0.2
-            cells.append(cell)
+            // A bolt is a glyph, not a dot: big, bright, with a drawn glow, falling fast and living
+            // briefly — a strike, not a flake. The old one was an 11 pt glyph at 14 pt, nearly
+            // invisible next to the snow.
+            let bolt = self.makeCell(image: WGSnowView.boltImage(), birthRate: totalBirthRate * 0.3, lifetime: (1.6, 0.6))
+            bolt.color = UIColor(rgb: 0xffe45c, alpha: 1.0).cgColor
+            bolt.velocity = 110.0
+            bolt.velocityRange = 50.0
+            bolt.scale = 1.0
+            bolt.scaleRange = 0.45
+            bolt.scaleSpeed = -0.25
+            bolt.spinRange = 0.35
+            bolt.alphaRange = 0.3
+            cells.append(bolt)
+
+            // Sparks of the same strike: tiny bright grains with a much wider scatter.
+            let spark = self.makeCell(image: WGSnowView.dotImage(diameter: 2.0), birthRate: totalBirthRate * 0.7, lifetime: (0.9, 0.4))
+            spark.color = UIColor(rgb: 0xfff0a0, alpha: 0.95).cgColor
+            spark.velocity = 140.0
+            spark.velocityRange = 70.0
+            spark.emissionRange = .pi / 3.0
+            spark.scale = 1.0
+            spark.scaleRange = 0.7
+            cells.append(spark)
         }
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -563,20 +609,27 @@ final class WGSnowView: UIView {
     }
 
     /// A CAEmitterCell needs a CGImage, and an SF Symbol has none (`cgImage` is nil for a symbol
-    /// image): the bolt is rasterized once.
+    /// image): the bolt is rasterized once. It is drawn twice under a warm shadow, so a bolt carries
+    /// its own glow — the emitter multiplies the image by the cell's color, a glowless glyph just
+    /// vanished into the wallpaper.
     private static func boltImage() -> UIImage? {
         if let image = WGSnowView.bolt {
             return image
         }
-        let side: CGFloat = 14.0
-        guard let symbol = UIImage(systemName: "bolt.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 11.0, weight: .bold))?.withTintColor(.white, renderingMode: .alwaysOriginal) else {
+        let side: CGFloat = 24.0
+        guard let symbol = UIImage(systemName: "bolt.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 17.0, weight: .black))?.withTintColor(.white, renderingMode: .alwaysOriginal) else {
             return nil
         }
         let format = UIGraphicsImageRendererFormat()
         format.opaque = false
-        let image = UIGraphicsImageRenderer(size: CGSize(width: side, height: side), format: format).image { _ in
+        let image = UIGraphicsImageRenderer(size: CGSize(width: side, height: side), format: format).image { context in
+            let cgContext = context.cgContext
             let symbolSize = symbol.size
-            symbol.draw(in: CGRect(x: (side - symbolSize.width) * 0.5, y: (side - symbolSize.height) * 0.5, width: symbolSize.width, height: symbolSize.height))
+            let rect = CGRect(x: (side - symbolSize.width) * 0.5, y: (side - symbolSize.height) * 0.5, width: symbolSize.width, height: symbolSize.height)
+            cgContext.setShadow(offset: .zero, blur: 8.0, color: UIColor(red: 1.0, green: 0.9, blue: 0.35, alpha: 0.95).cgColor)
+            symbol.draw(in: rect)
+            symbol.draw(in: rect)
+            cgContext.setShadow(offset: .zero, blur: 0.0, color: nil)
         }
         WGSnowView.bolt = image
         return image

@@ -115,6 +115,8 @@
   "appearance.profile.hideStarRating": "Hide the star level",
   "appearance.profile.idLabel": "ID",
   "appearance.profile.joinedLabel": "You joined",
+  "appearance.profile.localPremium": "Local Premium",
+  "appearance.profile.localPremiumInfo": "The Premium star and the Premium look on your own profile. Server features (upload limits, paid stickers) stay as they are.",
   "appearance.profile.memberJoinedLabel": "Joined “{chat}”",
   "appearance.profile.mutualContactLabel": "Contact",
   "appearance.profile.mutualContactValue": "Mutual contact",
