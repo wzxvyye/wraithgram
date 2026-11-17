@@ -539,7 +539,8 @@ final class WGSnowView: UIView {
             totalBirthRate = 75.0 * Float(self.areaFactor) * intensity
             lifetime = (4.0, 1.0)
         }
-        let size = Float(self.currentSize)
+        let size = CGFloat(self.currentSize)
+        let speed = CGFloat(self.currentSpeed.multiplier)
         var cells: [CAEmitterCell] = []
         switch style {
         case .snow:
@@ -553,33 +554,33 @@ final class WGSnowView: UIView {
         case .rain:
             let drop = self.makeCell(image: WGSnowView.dropImage(), birthRate: totalBirthRate, lifetime: (max(1.0, lifetime.mean * 0.65), lifetime.range * 0.5))
             drop.color = UIColor(rgb: self.currentColor ?? 0x8BCBFF, alpha: 0.85).cgColor
-            drop.velocity = 160.0 * Float(self.currentSpeed.multiplier)
-            drop.velocityRange = 35.0 * Float(self.currentSpeed.multiplier)
+            drop.velocity = 160.0 * speed
+            drop.velocityRange = 35.0 * speed
             drop.emissionLongitude = .pi / 2.0 - 0.12
             drop.emissionRange = .pi / 18.0
-            drop.scale = 0.8 * Float(self.currentSize)
-            drop.scaleRange = 0.35 * Float(self.currentSize)
+            drop.scale = 0.8 * size
+            drop.scaleRange = 0.35 * size
             cells.append(drop)
         case .leaves:
             let leaf = self.makeCell(image: WGSnowView.leafImage(), birthRate: totalBirthRate * 0.55, lifetime: lifetime)
             leaf.color = UIColor(rgb: self.currentColor ?? 0xE59B45, alpha: 0.95).cgColor
-            leaf.velocity = 35.0 * Float(self.currentSpeed.multiplier)
-            leaf.velocityRange = 18.0 * Float(self.currentSpeed.multiplier)
+            leaf.velocity = 35.0 * speed
+            leaf.velocityRange = 18.0 * speed
             leaf.emissionRange = .pi / 3.0
             leaf.spinRange = 1.4
-            leaf.scale = 0.85 * Float(self.currentSize)
-            leaf.scaleRange = 0.4 * Float(self.currentSize)
+            leaf.scale = 0.85 * size
+            leaf.scaleRange = 0.4 * size
             leaf.scaleSpeed = -0.08
             cells.append(leaf)
         case .blossoms:
             let blossom = self.makeCell(image: WGSnowView.blossomImage(), birthRate: totalBirthRate * 0.6, lifetime: lifetime)
             blossom.color = UIColor(rgb: self.currentColor ?? 0xFFB7D5, alpha: 0.95).cgColor
-            blossom.velocity = 32.0 * Float(self.currentSpeed.multiplier)
-            blossom.velocityRange = 16.0 * Float(self.currentSpeed.multiplier)
+            blossom.velocity = 32.0 * speed
+            blossom.velocityRange = 16.0 * speed
             blossom.emissionRange = .pi / 3.0
             blossom.spinRange = 0.9
-            blossom.scale = 0.8 * Float(self.currentSize)
-            blossom.scaleRange = 0.35 * Float(self.currentSize)
+            blossom.scale = 0.8 * size
+            blossom.scaleRange = 0.35 * size
             cells.append(blossom)
         case .lightning:
             // A bolt is a glyph, not a dot: big, bright, with a drawn glow, falling fast and living
@@ -587,11 +588,11 @@ final class WGSnowView: UIView {
             // invisible next to the snow.
             let bolt = self.makeCell(image: WGSnowView.boltImage(), birthRate: totalBirthRate * 0.3, lifetime: (1.6, 0.6))
             bolt.color = UIColor(rgb: self.currentColor ?? 0xffe45c, alpha: 1.0).cgColor
-            bolt.velocity = 110.0 * Float(self.currentSpeed.multiplier)
-            bolt.velocityRange = 50.0 * Float(self.currentSpeed.multiplier)
-            bolt.scale = Float(self.currentSize)
-            bolt.scaleRange = 0.45 * Float(self.currentSize)
-            bolt.scaleSpeed = -0.25 * Float(self.currentSize)
+            bolt.velocity = 110.0 * speed
+            bolt.velocityRange = 50.0 * speed
+            bolt.scale = size
+            bolt.scaleRange = 0.45 * size
+            bolt.scaleSpeed = -0.25 * size
             bolt.spinRange = 0.35
             bolt.alphaRange = 0.3
             cells.append(bolt)
@@ -599,11 +600,11 @@ final class WGSnowView: UIView {
             // Sparks of the same strike: tiny bright grains with a much wider scatter.
             let spark = self.makeCell(image: WGSnowView.dotImage(diameter: 2.0), birthRate: totalBirthRate * 0.7, lifetime: (0.9, 0.4))
             spark.color = UIColor(rgb: self.currentColor ?? 0xffe45c, alpha: 0.95).cgColor
-            spark.velocity = 140.0 * Float(self.currentSpeed.multiplier)
-            spark.velocityRange = 70.0 * Float(self.currentSpeed.multiplier)
+            spark.velocity = 140.0 * speed
+            spark.velocityRange = 70.0 * speed
             spark.emissionRange = .pi / 3.0
-            spark.scale = Float(self.currentSize)
-            spark.scaleRange = 0.7 * Float(self.currentSize)
+            spark.scale = size
+            spark.scaleRange = 0.7 * size
             cells.append(spark)
         }
         CATransaction.begin()
@@ -621,8 +622,8 @@ final class WGSnowView: UIView {
         cell.lifetime = lifetime.mean
         cell.lifetimeRange = lifetime.range
         // 40–48 pt a second at normal speed, mostly downwards (π/2 points down here), ±20° of drift.
-        cell.velocity = 44.0 * Float(self.currentSpeed.multiplier)
-        cell.velocityRange = 4.0 * Float(self.currentSpeed.multiplier)
+        cell.velocity = 44.0 * speed
+        cell.velocityRange = 4.0 * speed
         cell.emissionLongitude = .pi / 2.0
         cell.emissionRange = .pi / 9.0 * 2.0
         // A linear fade-out over the life.
